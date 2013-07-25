@@ -19,8 +19,7 @@
     <!-- Add here all your dependencies -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-core</artifactId>
-      <version>5.1</version>
+      <artifactId>xwiki-platform-oldcore</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

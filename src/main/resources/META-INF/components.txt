@@ -1,1 +1,2 @@
+org.xwiki.security.authorization.internal.CelementsRightServiceImpl
 com.celements.rights.CelementsRightScriptService

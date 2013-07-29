@@ -17,7 +17,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.celements.rights;
+package org.xwiki.security.authorization.internal;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -32,6 +32,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.security.SecurityReference;
 
 import com.celements.common.test.AbstractBridgedComponentTestCase;
 import com.xpn.xwiki.XWiki;
@@ -52,6 +53,7 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
     getContext().setWiki(xwiki);
   }
 
+  /*
   @Test
   public void testCheckRight_publishNotActive() throws XWikiRightNotFoundException, 
       XWikiException {
@@ -152,11 +154,14 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
     BaseObject obj = new BaseObject();
     gc.add(GregorianCalendar.HOUR, 1);
     obj.setDateValue("publishDate", gc.getTime());
-    obj.setXClassReference(rightService.getPublicationClassReference(getContext()));
+    obj.setXClassReference(rightService.getPublicationClassReference());
     doc.addXObject(obj);
     replay(gs, xwiki);
-    assertFalse(rightService.checkRight("XWiki.user", doc, "view", true, true, false, 
-          getContext()));
+    try {
+      rightService.checkRight("XWiki.user", doc, "view", true, true, false, 
+          getContext());
+      fail("XWikiRightNotFoundException expected.");
+    } catch(XWikiRightNotFoundException xrnfe) { }
     verify(gs, xwiki);
   }
 
@@ -195,42 +200,56 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
     gc.add(GregorianCalendar.HOUR, 1);
     gc.add(GregorianCalendar.HOUR, 1);
     obj.setDateValue("unpublishDate", gc.getTime());
-    obj.setXClassReference(rightService.getPublicationClassReference(getContext()));
+    obj.setXClassReference(rightService.getPublicationClassReference());
     doc.addXObject(obj);
     replay(gs, xwiki);
     assertTrue(rightService.checkRight("XWiki.user", doc, "view", true, true, false, 
         getContext()));
     verify(gs, xwiki);
+  }*/
+
+  @Test
+  public void testGetPublishObject_null() throws XWikiException {
+    DocumentReference docRef = new DocumentReference(getContext().getDatabase(), "Space", 
+        "Doc");
+    expect(xwiki.getDocument(same(docRef), same(getContext()))).andReturn(
+        new XWikiDocument(docRef)).once();
+    replay(xwiki);
+    List<BaseObject> objs = rightService.getPublishObjects(docRef);
+    verify(xwiki);
+    assertNotNull(objs);
+    assertTrue(objs.isEmpty());
   }
 
   @Test
-  public void testGetPublishObject_null() {
-    XWikiDocument doc = new XWikiDocument(new DocumentReference(getContext().getDatabase(
-        ), "Space", "Doc"));
-    assertNull(rightService.getPublishObjects(doc, getContext()));
-  }
-
-  @Test
-  public void testGetPublishObject_hasObj() {
-    XWikiDocument doc = new XWikiDocument(new DocumentReference(getContext().getDatabase(
-        ), "Space", "Doc"));
+  public void testGetPublishObject_hasObj() throws XWikiException {
+    DocumentReference docRef = new DocumentReference(getContext().getDatabase(), "Space", 
+        "Doc");
+    XWikiDocument doc = new XWikiDocument(docRef);
     BaseObject obj = new BaseObject();
-    obj.setXClassReference(rightService.getPublicationClassReference(getContext()));
+    obj.setXClassReference(rightService.getPublicationClassReference());
     doc.addXObject(obj);
-    assertEquals(obj, rightService.getPublishObjects(doc, getContext()).get(0));
+    expect(xwiki.getDocument(same(docRef), same(getContext()))).andReturn(doc).once();
+    replay(xwiki);
+    assertEquals(obj, rightService.getPublishObjects(docRef).get(0));
+    verify(xwiki);
   }
 
   @Test
-  public void testGetPublishObject_hasObjs() {
-    XWikiDocument doc = new XWikiDocument(new DocumentReference(getContext().getDatabase(
-        ), "Space", "Doc"));
+  public void testGetPublishObject_hasObjs() throws XWikiException {
+    DocumentReference docRef = new DocumentReference(getContext().getDatabase(), "Space", 
+        "Doc");
+    XWikiDocument doc = new XWikiDocument(docRef);
     BaseObject obj1 = new BaseObject();
-    obj1.setXClassReference(rightService.getPublicationClassReference(getContext()));
+    obj1.setXClassReference(rightService.getPublicationClassReference());
     doc.addXObject(obj1);
     BaseObject obj2 = new BaseObject();
-    obj2.setXClassReference(rightService.getPublicationClassReference(getContext()));
+    obj2.setXClassReference(rightService.getPublicationClassReference());
     doc.addXObject(obj2);
-    assertEquals(2, rightService.getPublishObjects(doc, getContext()).size());
+    expect(xwiki.getDocument(same(docRef), same(getContext()))).andReturn(doc).once();
+    replay(xwiki);
+    assertEquals(2, rightService.getPublishObjects(docRef).size());
+    verify(xwiki);
   }
 
   @Test
@@ -285,7 +304,7 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
         eq("celements.publishdate.active"), eq("0"), same(getContext()))).andReturn("0"
         ).once();
     replay(xwiki);
-    assertEquals(false, rightService.isPublishActive(getContext()));
+    assertEquals(false, rightService.isPublishActive());
     verify(xwiki);
   }
 
@@ -300,7 +319,7 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
         ), "TestSpace", "TestDoc"));
     getContext().setDoc(doc);
     replay(xwiki);
-    assertEquals(false, rightService.isPublishActive(getContext()));
+    assertEquals(false, rightService.isPublishActive());
     verify(xwiki);
   }
 
@@ -312,7 +331,7 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
         ), "TestSpace", "TestDoc"));
     getContext().setDoc(doc);
     replay(xwiki);
-    assertEquals(false, rightService.isPublishActive(getContext()));
+    assertEquals(false, rightService.isPublishActive());
     verify(xwiki);
   }
 
@@ -324,7 +343,7 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
         ), "TestSpace", "TestDoc"));
     getContext().setDoc(doc);
     replay(xwiki);
-    assertEquals(true, rightService.isPublishActive(getContext()));
+    assertEquals(true, rightService.isPublishActive());
     verify(xwiki);
   }
 
@@ -391,58 +410,58 @@ public class CelementsRightServiceImplTest extends AbstractBridgedComponentTestC
 
   @Test
   public void testIsPubUnpubOverride_nothingSet() {
-    assertFalse(rightService.isPubUnpubOverride(getContext()));
+    assertFalse(rightService.isPubUnpubOverride());
   }
 
   @Test
   public void testIsPubUnpubOverride_wrongSet() {
     getContext().put("overridePubCheck", "test wrong type");
-    assertFalse(rightService.isPubUnpubOverride(getContext()));
+    assertFalse(rightService.isPubUnpubOverride());
   }
 
   @Test
   public void testIsPubUnpubOverride_pub() {
     getContext().put("overridePubCheck", CelementsRightServiceImpl.PubUnpub.PUBLISHED);
-    assertTrue(rightService.isPubUnpubOverride(getContext()));
+    assertTrue(rightService.isPubUnpubOverride());
   }
 
   @Test
   public void testIsPubUnpubOverride_unpub() {
     getContext().put("overridePubCheck", CelementsRightServiceImpl.PubUnpub.UNPUBLISHED);
-    assertTrue(rightService.isPubUnpubOverride(getContext()));
+    assertTrue(rightService.isPubUnpubOverride());
   }
 
   @Test
   public void testIsPubOverride_nothing() {
-    assertFalse(rightService.isPubOverride(getContext()));
+    assertFalse(rightService.isPubOverride());
   }
 
   @Test
   public void testIsPubOverride_unpub() {
     getContext().put("overridePubCheck", CelementsRightServiceImpl.PubUnpub.UNPUBLISHED);
-    assertFalse(rightService.isPubOverride(getContext()));
+    assertFalse(rightService.isPubOverride());
   }
 
   @Test
   public void testIsPubOverride_pub() {
     getContext().put("overridePubCheck", CelementsRightServiceImpl.PubUnpub.PUBLISHED);
-    assertTrue(rightService.isPubOverride(getContext()));
+    assertTrue(rightService.isPubOverride());
   }
 
   @Test
   public void testIsUnpubOverride_nothing() {
-    assertFalse(rightService.isUnpubOverride(getContext()));
+    assertFalse(rightService.isUnpubOverride());
   }
 
   @Test
   public void testIsUnpubOverride_unpub() {
     getContext().put("overridePubCheck", CelementsRightServiceImpl.PubUnpub.UNPUBLISHED);
-    assertTrue(rightService.isUnpubOverride(getContext()));
+    assertTrue(rightService.isUnpubOverride());
   }
 
   @Test
   public void testIsUnpubOverride_pub() {
     getContext().put("overridePubCheck", CelementsRightServiceImpl.PubUnpub.PUBLISHED);
-    assertFalse(rightService.isUnpubOverride(getContext()));
+    assertFalse(rightService.isUnpubOverride());
   }
 }

@@ -19,37 +19,41 @@
  */
 package com.celements.rights;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.component.annotation.Requirement;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.script.service.ScriptService;
+import org.xwiki.security.authorization.internal.CelementsRightServiceImpl;
+import org.xwiki.security.authorization.internal.CelementsRightServiceImpl.PubUnpub;
 
-import com.celements.rights.CelementsRightServiceImpl.PubUnpub;
 import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.user.api.XWikiRightService;
 
-@Component("celementsright")
+@Component
+@Named("celementsright")
 public class CelementsRightScriptService implements ScriptService {
   
   private static Log LOGGER = LogFactory.getFactory().getInstance(
       CelementsRightScriptService.class);
   
-  @Requirement
+  @Inject
   Execution execution;
   
-  @Requirement("local")
+  @Inject
+  @Named("local")
   EntityReferenceSerializer<String> serializer_local;
-  
+
   public boolean publicationActivated(DocumentReference forDoc) {
     XWikiRightService rightService = getContext().getWiki().getRightService();
     if(rightService instanceof CelementsRightServiceImpl) {
-      return ((CelementsRightServiceImpl)rightService).isPublishActive(forDoc, 
-          getContext());
+      return ((CelementsRightServiceImpl)rightService).isPublishActive(forDoc);
     } else {
       LOGGER.warn("Needs CelementsRightServiceImpl for publish / unpublish to work");
       return false;

@@ -17,16 +17,5 @@
   </scm>
   <dependencies>
     <!-- Add here all your dependencies -->
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-oldcore</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.celements</groupId>
-      <artifactId>celements-shared-tests</artifactId>
-      <version>1.6</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 </project>

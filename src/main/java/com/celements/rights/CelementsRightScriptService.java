@@ -22,8 +22,7 @@ package com.celements.rights;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
@@ -39,9 +38,9 @@ import com.xpn.xwiki.user.api.XWikiRightService;
 @Component
 @Named("celementsright")
 public class CelementsRightScriptService implements ScriptService {
-  
-  private static Log LOGGER = LogFactory.getFactory().getInstance(
-      CelementsRightScriptService.class);
+
+  @Inject
+  private Logger logger;
   
   @Inject
   Execution execution;
@@ -55,7 +54,7 @@ public class CelementsRightScriptService implements ScriptService {
     if(rightService instanceof CelementsRightServiceImpl) {
       return ((CelementsRightServiceImpl)rightService).isPublishActive(forDoc);
     } else {
-      LOGGER.warn("Needs CelementsRightServiceImpl for publish / unpublish to work");
+      logger.warn("Needs CelementsRightServiceImpl for publish / unpublish to work");
       return false;
     }
   }
@@ -78,12 +77,12 @@ public class CelementsRightScriptService implements ScriptService {
     if(rightService instanceof CelementsRightServiceImpl) {
       getContext().put("overridePubCheck", unpublished);
     } else {
-      LOGGER.warn("Needs CelementsRightServiceImpl for publish / unpublish to work");
+      logger.warn("Needs CelementsRightServiceImpl for publish / unpublish to work");
     }
     try {
       return rightService.hasAccessLevel(right, username, docname, getContext());
     } catch (XWikiException xwe) {
-      LOGGER.error("hasAccessLevelPublished: Exception while checking access level for " +
+      logger.error("hasAccessLevelPublished: Exception while checking access level for " +
           "right=" + right + ", username=" + username + ", docname=" + docname, xwe);
       return false;
     }

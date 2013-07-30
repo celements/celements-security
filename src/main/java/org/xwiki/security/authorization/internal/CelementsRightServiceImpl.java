@@ -34,12 +34,11 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.context.Execution;
 import org.xwiki.model.reference.DocumentReference;
-import org.xwiki.model.reference.EntityReference;
 import org.xwiki.security.GroupSecurityReference;
+import org.xwiki.security.SecurityReference;
 import org.xwiki.security.UserSecurityReference;
 import org.xwiki.security.authorization.AuthorizationSettler;
 import org.xwiki.security.authorization.Right;
@@ -51,7 +50,6 @@ import com.xpn.xwiki.XWikiContext;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
-import com.xpn.xwiki.user.impl.xwiki.XWikiRightServiceImpl;
 
 @Component
 @Named("celpublication")
@@ -62,9 +60,9 @@ public class CelementsRightServiceImpl implements AuthorizationSettler {
   
   @Inject
   Execution execution;
-  
-  private static final Logger LOGGER = LoggerFactory.getLogger(
-      XWikiRightServiceImpl.class);
+
+  @Inject
+  private Logger logger;
   
   public static enum PubUnpub {
     PUBLISHED, UNPUBLISHED;
@@ -80,21 +78,21 @@ public class CelementsRightServiceImpl implements AuthorizationSettler {
       List<BaseObject> objs = getPublishObjects(securityRuleEntries.getFirst(
           ).getReference());
       if(isPubOverride() || (!isUnpubOverride() && !isPublished(objs))) {
-        LOGGER.info("Document not published, checking edit rights.");
+        logger.info("Document not published, checking edit rights.");
         SecurityAccess access = result.getAccess();
         if(access.get(Right.EDIT) != ALLOW) {
           if(access instanceof XWikiSecurityAccess) {
             ((XWikiSecurityAccess)access).deny(Right.VIEW);
           } else {
-            LOGGER.error("Could not enforce publication dates. Access is not an " +
+            logger.error("Could not enforce publication dates. Access is not an " +
                 "XWikiSecurityAccess");
           }
         }
       } else {
-        LOGGER.info("Document published or publication not activated.");
+        logger.info("Document published or publication not activated.");
       }
     }
-    LOGGER.debug("Resulting rights: user=[" + result.getUserReference() + "] access=[" 
+    logger.debug("Resulting rights: user=[" + result.getUserReference() + "] access=[" 
         + result.getAccess() + "] ref=[" + result.getReference() + "]");
     return result;
   }
@@ -121,13 +119,13 @@ public class CelementsRightServiceImpl implements AuthorizationSettler {
     return val;
   }
 
-  List<BaseObject> getPublishObjects(EntityReference docRef) {
+  List<BaseObject> getPublishObjects(SecurityReference docRef) {
     List<BaseObject> pubObjs = null;
     try {
       XWikiDocument doc = getContext().getWiki().getDocument(docRef, getContext());
       pubObjs = doc.getXObjects(getPublicationClassReference());
     } catch (XWikiException xwe) {
-      LOGGER.error("Exception while getting XWikiDocument to check publication dates", 
+      logger.error("Exception while getting XWikiDocument to check publication dates", 
           xwe);
     }
     if(pubObjs == null) {
